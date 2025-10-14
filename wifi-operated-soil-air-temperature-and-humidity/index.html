@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; margin: 20px; }
+    canvas { max-width: 400px; margin: 10px auto; display: block; }
+    h2 { margin-top: 25px; }
+  </style>
+</head>
+<body>
+  <h1>ESP32 Sensor Dashboard</h1>
+  <p>Soil: <b id="soilRaw">0</b> / 4095 → <b id="soilPercent">0%</b></p>
+  <p>Light: <b id="lightRaw">0</b> / 4095 → <b id="lightPercent">0%</b></p>
+  <canvas id="soilChart"></canvas>
+  <canvas id="lightChart"></canvas>
+  <p><a href="/update">Firmware Update (OTA)</a></p>
+
+  <script>
+    const mkChart = (id, label, color) => new Chart(document.getElementById(id), {
+      type:'line',
+      data:{labels:[],datasets:[{label,data:[],borderColor:color,fill:false}]},
+      options:{scales:{y:{min:0,max:100}}}
+    });
+
+    const soilChart = mkChart('soilChart','Soil Moisture (%)','blue');
+    const lightChart = mkChart('lightChart','Light Level (%)','orange');
+    const labels = [], soilData = [], lightData = [];
+
+    async function update() {
+      const r = await fetch('/data');
+      const d = await r.json();
+      const t = new Date().toLocaleTimeString();
+      labels.push(t);
+      soilData.push(d.soilPercent);
+      lightData.push(d.lightPercent);
+      if(labels.length>288){labels.shift();soilData.shift();lightData.shift();}
+      soilChart.data.labels = lightChart.data.labels = labels;
+      soilChart.data.datasets[0].data = soilData;
+      lightChart.data.datasets[0].data = lightData;
+      soilChart.update(); lightChart.update();
+      document.getElementById('soilRaw').textContent = d.soilRaw;
+      document.getElementById('soilPercent').textContent = d.soilPercent + '%';
+      document.getElementById('lightRaw').textContent = d.lightRaw;
+      document.getElementById('lightPercent').textContent = d.lightPercent + '%';
+    }
+    update(); setInterval(update, 5000);
+  </script>
+</body>
+</html>

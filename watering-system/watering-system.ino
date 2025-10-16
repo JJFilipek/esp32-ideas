@@ -1,6 +1,6 @@
 #define PUMP_PIN 10
 #define VALVE1_PIN 9
-#define VALVE2_PIN 8
+#define VALVE2_PIN 5
 #define VALVE3_PIN 7
 
 const int valves[] = {VALVE1_PIN, VALVE2_PIN, VALVE3_PIN};
@@ -20,13 +20,13 @@ void setup() {
     digitalWrite(valves[i], HIGH);
     delay(durations[i]);
     digitalWrite(valves[i], LOW);
-    delay(100);
+    delay(300);
   }
 
   digitalWrite(PUMP_PIN, LOW);
 
   // Deep sleep 12h
-  esp_sleep_enable_timer_wakeup(12ULL * 60 * 60 * 1000000)
+  esp_sleep_enable_timer_wakeup(12ULL * 60 * 60 * 1000000);
   esp_deep_sleep_start();
 }
 
